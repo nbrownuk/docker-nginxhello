@@ -1,53 +1,57 @@
-FROM debian:jessie-slim
+FROM alpine:latest
 
 # Define build argument for version
-ARG VERSION
+ARG VERSION=1.12.1
 
-# Define variable to use to peg version
-ENV VERSION=${VERSION:-1.12.0} \
-    GPG_KEY=B0F4253373F8F6F510D42178520A9993A1C052F8
+RUN set -x                                                        && \
+                                                                     \
+# Install build tools, libraries and utilities                       \
+    apk add --no-cache --virtual .build-deps                         \
+        build-base                                                   \
+        gnupg                                                        \
+        pcre-dev                                                     \
+        wget                                                         \
+        zlib-dev                                                  && \
+                                                                     \
+# Retrieve, verify and unpack Nginx source                           \
+    TMP="$(mktemp -d)" && cd "$TMP"                               && \
+    gpg --keyserver pgp.mit.edu --recv-keys                          \
+        B0F4253373F8F6F510D42178520A9993A1C052F8                  && \
+    wget -q http://nginx.org/download/nginx-${VERSION}.tar.gz     && \
+    wget -q http://nginx.org/download/nginx-${VERSION}.tar.gz.asc && \
+    gpg --verify nginx-${VERSION}.tar.gz.asc                      && \
+    tar -xf nginx-${VERSION}.tar.gz                               && \
+                                                                     \
+# Build and install nginx                                            \
+    cd nginx-${VERSION}                                           && \
+    ./configure                                                      \
+        --with-ld-opt="-static"                                      \
+        --with-http_sub_module                                    && \
+    make install                                                  && \
+    strip /usr/local/nginx/sbin/nginx                             && \
+                                                                     \
+# Clean up                                                           \
+    cd / && rm -rf "$TMP"                                         && \
+    apk del .build-deps                                           && \
+                                                                     \
+# Symlink access and error logs to /dev/stdout and /dev/stderr,      \
+# in order to make use of Docker's logging mechanism                 \
+    ln -sf /dev/stdout /usr/local/nginx/logs/access.log           && \
+    ln -sf /dev/stderr /usr/local/nginx/logs/error.log
 
-# Install build tools, libraries and utilities
-RUN apt-get update                                                   && \
-    apt-get install -y --no-install-recommends --no-install-suggests    \
-        build-essential                                                 \
-        libpcre3-dev                                                    \
-        wget                                                            \
-        zlib1g-dev                                                   && \
-                                                                        \
-# Retrieve and unpack Nginx source                                      \
-    TMP="$(mktemp -d)" && cd "$TMP"                                  && \
-    gpg --keyserver ha.pool.sks-keyservers.net --recv-keys $GPG_KEY  && \
-    wget -q http://nginx.org/download/nginx-${VERSION}.tar.gz        && \
-    wget -q http://nginx.org/download/nginx-${VERSION}.tar.gz.asc    && \
-    gpg --verify nginx-${VERSION}.tar.gz.asc                         && \
-    tar -xf nginx-${VERSION}.tar.gz -C /usr/local/src                && \
-                                                                        \
-# Build Nginx                                                           \
-    cd /usr/local/src/nginx-${VERSION}                               && \
-    ./configure --with-http_sub_module                               && \
-    make                                                             && \
-    make install                                                     && \
-                                                                        \
-# Clean up                                                              \
-    apt-get remove --purge -y                                           \
-        build-essential                                                 \
-        libpcre3-dev                                                    \
-        wget                                                            \
-        zlib1g-dev                                                   && \
-    apt-get autoremove -y                                            && \
-    cd /                                                             && \
-    rm -rf $TMP/nginx-${VERSION}.tar.gz                                 \
-           /var/lib/apt/lists/*                                         \
-           /usr/local/src/nginx-${VERSION}
-
-COPY nginx.conf /usr/local/nginx/conf/
+# Customise static content, and configuration
 COPY index.html /usr/local/nginx/html/
+COPY nginx.conf /usr/local/nginx/conf/
+
+# Add entrypoint script
 COPY docker-entrypoint.sh /
+
+# Change default stop signal from SIGTERM to SIGQUIT
+STOPSIGNAL SIGQUIT
 
 # Expose port
 EXPOSE 80
 
-# Define entrypoint
+# Define entrypoint and default parameters
 ENTRYPOINT ["/docker-entrypoint.sh"]
 CMD ["/usr/local/nginx/sbin/nginx", "-g", "daemon off;"]
