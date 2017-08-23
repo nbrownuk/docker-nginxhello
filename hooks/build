@@ -3,5 +3,5 @@
 set -e
 
 # Build image using supplied ARGS
-echo "Building $IMAGE_NAME with BUILD_DATE=${BUILD_DATE} and GIT_SHA1=${GIT_SHA1}"
-docker build -t $IMAGE_NAME .
+echo "Building $IMAGE_NAME from $(git rev-parse --abbrev-ref HEAD) with $GIT_SHA1"
+docker build -t $IMAGE_NAME --build-arg VERSION="1.12.1" .

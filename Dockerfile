@@ -1,7 +1,7 @@
 FROM alpine:latest
 
 # Define build argument for version
-ARG VERSION=1.12.1
+ARG VERSION
 
 RUN set -x                                                        && \
                                                                      \
