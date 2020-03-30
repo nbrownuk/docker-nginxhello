@@ -1,11 +1,13 @@
 # Tags and respective `Dockerfile` links
 
-- [`1.13.5`, `1.13`, `mainline` *(1.13.5/Dockerfile)*](https://github.com/nbrownuk/docker-nginxhello/blob/mainline/Dockerfile)
-- [`1.12.1`, `1.12`, `stable`, `latest` *(1.12.1/Dockerfile)*](https://github.com/nbrownuk/docker-nginxhello/blob/master/Dockerfile)
+- [`1.17.9`, `1.17`, `mainline`, `latest` *(1.17.9/Dockerfile)*](https://github.com/nbrownuk/docker-nginxhello/blob/mainline/Dockerfile)
+- [`1.16.1`, `1.16`, `stable` *(1.16.1/Dockerfile)*](https://github.com/nbrownuk/docker-nginxhello/blob/master/Dockerfile)
 
 # What is this image?
 
-This image is a simple configuration of the [Nginx](https://nginx.org/en/) HTTP server, used for demonstrating the provision of a service from a container running on a Docker host, or from containers deployed as service tasks in a Swarm cluster.
+<img src="https://github.com/nbrownuk/docker-nginxhello/blob/master/screenshot.png" alt="Output" style="zoom:75%;" />
+
+This image is a simple configuration of the [Nginx](https://nginx.org/en/) HTTP server, used for demonstrating the provision of a service from a container running on a Docker host, from containers deployed as service tasks in a Swarm cluster, or as pods in a Kubernetes cluster. The same image can be used for different, distinct workloads, by setting the `COLOR` environment variable to one of Red, Blue or Black (default). Simplistic liveness and readiness endpoints can be accessed at `/healthz/live` and `/healthz/ready`, respectively.
 
 # How to use this image
 
@@ -14,13 +16,13 @@ This image is a simple configuration of the [Nginx](https://nginx.org/en/) HTTP 
 The content and configuration of Nginx is simplistic, and can be invoked with:
 
 ```
-$ docker container run --rm -d -p 80:80 nbrown/nginxhello
+$ docker container run --rm -d -p 80:80 -e COLOR=blue nbrown/nginxhello
 ```
 
-To add the hostname of the Docker host to the served content, mount `/etc/hostname` at `/etc/docker-hostname` inside the container:
+To add the hostname of the Docker host to the served content, set the `NODE_NAME` environment variable for the container:
 
 ```
-$ docker container run --rm -d -p 80:80 -v /etc/hostname:/etc/docker-hostname:ro nbrown/nginxhello
+$ docker container run --rm -d -p 80:80 -e NODENAME=$(hostname) nbrown/nginxhello
 ```
 
 ## Running a Swarm service
@@ -30,6 +32,39 @@ In order to run a Swarm service, and have each task serve the hostname of the no
 ```
 $ docker service create --detach=false \
     --publish published=80,target=80 \
-    --mount type=bind,src=/etc/hostname,dst=/etc/docker-hostname,ro \
+    --env COLOR=Red
+    --env NODE_NAME="{{.Node.Hostname}}" \
     nbrown/nginxhello
+```
+
+## Running a Kubernetes deployment
+
+To have Deployment replicas serve the cluster node's hostname, use the Downward API to retrieve the hostname:
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: nginxhello
+  name: nginxhello
+spec:
+  selector:
+    matchLabels:
+      app: nginxhello
+  template:
+    metadata:
+      labels:
+        app: nginxhello
+    spec:
+      containers:
+      - image: nginxhello
+        name: nginxhello
+        ports:
+        - containerPort: 80
+        env:
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
 ```
