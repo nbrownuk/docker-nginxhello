@@ -1,6 +1,6 @@
 # Tags and respective `Dockerfile` links
 
-- [`1.17.10`, `1.17`, `mainline`, `latest` *(1.17.10/Dockerfile)*](https://github.com/nbrownuk/docker-nginxhello/blob/mainline/Dockerfile)
+- [`1.19.0`, `1.19`, `mainline`, `latest` *(1.19.0/Dockerfile)*](https://github.com/nbrownuk/docker-nginxhello/blob/mainline/Dockerfile)
 
 # What is this image?
 
