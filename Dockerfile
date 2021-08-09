@@ -1,4 +1,4 @@
-FROM nginx:mainline-alpine AS build-tools
+FROM nginx:1.21.1-alpine AS build-tools
 
 WORKDIR /usr/share/nginx/html
 
