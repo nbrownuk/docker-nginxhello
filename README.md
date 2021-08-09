@@ -6,7 +6,7 @@
 
 <img src="https://github.com/nbrownuk/docker-nginxhello/blob/master/screenshot.png" alt="Output" style="zoom:75%;" />
 
-This image is a simple configuration of the [Nginx](https://nginx.org/en/) HTTP server, used for demonstrating the provision of a service from a container running on a Docker host, from containers deployed as service tasks in a Swarm cluster, or as pods in a Kubernetes cluster. The same image can be used for different, distinct workloads, by setting the `COLOR` environment variable to any CSS supported color, black (default). Simplistic liveness and readiness endpoints can be accessed at `/healthz/live` and `/healthz/ready`, respectively.
+This image is a simple configuration of the [Nginx](https://nginx.org/en/) HTTP server, used for demonstrating the provision of a service from a container running on a Docker host, from containers deployed as service tasks in a Swarm cluster, or as pods in a Kubernetes cluster. The same image can be used for different, distinct workloads, by setting the `COLOR` environment variable to any [CSS supported color](https://www.w3schools.com/cssref/css_colors.asp), black (default). Simplistic liveness and readiness endpoints can be accessed at `/healthz/live` and `/healthz/ready`, respectively.
 
 # How to use this image
 
