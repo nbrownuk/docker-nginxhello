@@ -18,7 +18,7 @@ ENV VERSION ${VERSION:-1.16.1}
 # Retrieve and verify Nginx source
 RUN wget -q http://nginx.org/download/nginx-${VERSION}.tar.gz     && \
     wget -q http://nginx.org/download/nginx-${VERSION}.tar.gz.asc && \
-    gpg --keyserver ha.pool.sks-keyservers.net --recv-keys           \
+    gpg --keyserver keyserver.ubuntu.com --recv-keys                 \
         B0F4253373F8F6F510D42178520A9993A1C052F8                  && \
     gpg --verify nginx-${VERSION}.tar.gz.asc
 

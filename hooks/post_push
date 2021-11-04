@@ -2,7 +2,7 @@
 
 set -e
 
-minorVer="1.19.2"
+minorVer="1.21.4"
 
 # Parse image name for repo name, and define major tag
 tagStart=$(expr index "$IMAGE_NAME" :)
