@@ -1,6 +1,6 @@
 # Tags and respective `Dockerfile` links
 
-- [`1.22.1`, `1.22`, `stable` *(1.22.1/Dockerfile)*](https://github.com/nbrownuk/docker-nginxhello/blob/master/Dockerfile)
+- [`1.24.0`, `1.24`, `stable` *(1.24.0/Dockerfile)*](https://github.com/nbrownuk/docker-nginxhello/blob/master/Dockerfile)
 
 # What is this image?
 
